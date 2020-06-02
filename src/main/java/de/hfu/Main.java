@@ -28,6 +28,9 @@ public class Main
             System.out.println("Please type in some Words: ");
             input = scan.nextLine();
 
+            if (input.equals("exit"))
+                break;
+
             System.out.println(input.toUpperCase());
         }
     }
