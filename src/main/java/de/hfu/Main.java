@@ -4,6 +4,9 @@ package de.hfu;
 
 import java.util.Scanner;
 
+import static de.hfu.Util.istErstesHalbjahr;
+
+
 /**
  * Main Class is for all the fun
  */
@@ -42,7 +45,8 @@ public class Main
         /**
          * Using UpperCase function
          */
-        UpperCase();
+        //UpperCase();
+
 
     }
 }
