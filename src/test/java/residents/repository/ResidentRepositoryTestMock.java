@@ -1,39 +1,69 @@
 package residents.repository;
 
-import org.junit.Test;
 import residents.domain.Resident;
+import residents.service.BaseResidentService;
+import residents.service.ResidentServiceException;
 
-import java.util.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
+import java.util.Arrays;
+
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.*;
-import static residents.service.BaseResidentService.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+
 
 public class ResidentRepositoryTestMock {
+    private BaseResidentService residentService;
+    private ResidentRepository residentRepositoryMock;
+    private List<Resident> residentList = new LinkedList<>();
 
-    @Test
-    public void test(){
+    public ResidentRepositoryTestMock() throws ParseException {
+        String[][] data = {
+                {"Max", "Mustermann", "Musterstr", "Musterstadt", "1955-05-01"},
+                {"Martina", "Musterfrau", "Musteralee", "Musterdorf", "2002-02-20"},
+                {"Obelix", "Gallier", "Zeltweg", "Kaff", "1997-08-18"},
+                {"Klaus", "Klausmann", "Teststr", "München", "2002-04-12"},
+                {"Claudia", "Klosterfrau", "Testpfad", "Frankfurt", "2020-02-22"},
+                {"Claudio", "Klosterfrau", "Testpfad", "Frankfurt", "2020-02-22"}
+        };
 
-        List<Resident> list = new LinkedList<>();
+        for (String[] s : data)
+            residentList.add(new Resident(s[0], s[1], s[2], s[3], new SimpleDateFormat("yyyy-MM-dd").parse(s[4])));
 
-        list.add(new Resident("Johannes", "Mustermann", "Musterstr",
-                "Musterstadt", new Date(1955,5,1)));
+        ResidentRepositoryStub residentRepositoryStub = new ResidentRepositoryStub(residentList);
+        this.residentService = new BaseResidentService();
+        this.residentService.setResidentRepository(residentRepositoryStub);
 
-        list.add(new Resident("Martina", "Musterfrau", "Musteralee",
-                "Musterdorf", new Date(2002, 2, 20)));
-
-        list.add(new Resident("Heinrich", "Klausmann", "Teststr",
-                "München", new Date(1997, 8, 18)));
-
-
-        ResidentRepository RepoMock = createMock(ResidentRepository.class);
-        expect(RepoMock.getUniqueResident("1")).andReturn(quelle);
-        expect(RepoMock.findeKonto("2")).andReturn(ziel);
-        RepoMock.updateKonto(quelle);
-        RepoMock.updateKonto(ziel);
-
+        this.residentRepositoryMock = createMock(ResidentRepository.class);
+        expect(residentRepositoryMock.getResidents()).andReturn(residentList);
+        replay(residentRepositoryMock);
+        residentService.setResidentRepository(residentRepositoryMock);
     }
 
+    @Test
+    public void unique() throws Exception {
+        Resident resident = new Resident("Max", "Mustermann", "Musterstr", "mustadsasderstadt", new SimpleDateFormat("yyyy-MM-dd").parse("1955-05-01"));
+        assertThat(resident.getFamilyName(), equalTo(residentService.getUniqueResident(resident).getFamilyName()));
+        verify(residentRepositoryMock);
+    }
+
+    @Test(expected = ResidentServiceException.class)
+    public void uniqueWithWildcard() throws Exception {
+        residentService.getUniqueResident(new Resident("Cl*", "", "", "", null));
+        verify(residentRepositoryMock);
+    }
+
+    @Test
+    public void filteredListTest() {
+        assertThat(Arrays.asList(residentList.get(4), residentList.get(5)), equalTo(residentService.getFilteredResidentsList(new Resident("", "Klo*", "", "", null))));
+        verify(residentRepositoryMock);
+
+    }
 }
