@@ -67,7 +67,7 @@ public class Resident implements Serializable {
   public void setDateOfBirth(Date dateOfBirth) {
     this.dateOfBirth = dateOfBirth;
   }
-  
-  
+
+  //Dies ist eine Änderung
   
 }
