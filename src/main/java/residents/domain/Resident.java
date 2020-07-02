@@ -69,5 +69,7 @@ public class Resident implements Serializable {
   }
 
   //Dies ist eine Änderung
+
+  //Dies ist eine Änderung2
   
 }
